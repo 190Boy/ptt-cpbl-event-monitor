@@ -2,462 +2,210 @@
 <html lang="zh-Hant">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>中職主題日 / 啦啦隊情報表</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>PTT 中職活動監控工具 v7</title>
+  <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
   <style>
-    :root {
-      --bg: #f6f7fb;
-      --card: #ffffff;
-      --text: #172033;
-      --muted: #6b7280;
-      --line: #e5e7eb;
-      --primary: #2563eb;
-      --primary-dark: #1d4ed8;
-      --good: #15803d;
-      --warn: #b45309;
-      --wait: #64748b;
-      --chip: #eef2ff;
-    }
-    * { box-sizing: border-box; }
-    body {
-      margin: 0;
-      background: linear-gradient(180deg, #eef4ff 0%, var(--bg) 260px);
-      color: var(--text);
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans TC", sans-serif;
-    }
-    a { color: var(--primary); text-decoration: none; }
-    a:hover { text-decoration: underline; }
-    .wrap { max-width: 1280px; margin: 0 auto; padding: 28px 18px 48px; }
-    h1 { margin: 0; font-size: 30px; line-height: 1.2; letter-spacing: -0.02em; }
-    .subtitle { margin: 8px 0 18px; color: var(--muted); line-height: 1.7; }
-    .card { background: rgba(255,255,255,.94); border: 1px solid rgba(229,231,235,.9); border-radius: 22px; box-shadow: 0 16px 38px rgba(15,23,42,.08); }
-    .panel { padding: 18px; margin-bottom: 18px; }
-    .form-grid { display: grid; grid-template-columns: repeat(6,1fr); gap: 12px; align-items: end; }
-    .field { display: flex; flex-direction: column; gap: 7px; }
-    label { font-size: 13px; color: var(--muted); font-weight: 700; }
-    textarea { width: 100%; min-height: 96px; resize: vertical; border: 1px solid var(--line); background: #fff; border-radius: 14px; padding: 11px 12px; font-size: 15px; color: var(--text); outline: none; font-family: inherit; }
-    input, select { width: 100%; border: 1px solid var(--line); background: #fff; border-radius: 14px; padding: 11px 12px; font-size: 15px; color: var(--text); outline: none; }
-    textarea:focus, input:focus, select:focus { border-color: #93c5fd; box-shadow: 0 0 0 4px rgba(147,197,253,.25); }
-    .span-2 { grid-column: span 2; }
-    .span-3 { grid-column: span 3; }
-    .check-row { display: flex; gap: 14px; flex-wrap: wrap; align-items: center; padding-top: 2px; }
-    .check { display: inline-flex; gap: 8px; align-items: center; color: var(--text); font-weight: 650; font-size: 14px; user-select: none; }
-    .check input { width: 16px; height: 16px; padding: 0; }
-    .actions { display: flex; gap: 10px; align-items: center; justify-content: flex-end; }
-    button { border: 0; border-radius: 14px; background: var(--primary); color: white; padding: 12px 16px; font-weight: 850; font-size: 15px; cursor: pointer; box-shadow: 0 10px 20px rgba(37,99,235,.22); }
-    button:hover { background: var(--primary-dark); }
-    button:disabled { opacity: .6; cursor: not-allowed; }
-    .ghost { background: #fff; color: var(--primary); border: 1px solid #bfdbfe; box-shadow: none; }
-    .ghost:hover { background: #eff6ff; }
-    .status { display: flex; justify-content: space-between; gap: 12px; align-items: center; margin: 12px 0 0; color: var(--muted); font-size: 14px; flex-wrap: wrap; }
-    .summary { display: grid; grid-template-columns: repeat(4,1fr); gap: 12px; margin-bottom: 18px; }
-    .stat { padding: 16px; }
-    .stat .num { font-size: 28px; font-weight: 900; margin-bottom: 4px; }
-    .stat .name { color: var(--muted); font-size: 14px; font-weight: 700; }
-    .toolbar { display: flex; gap: 10px; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; }
-    .search { max-width: 360px; }
-    .table-wrap { overflow: auto; border: 1px solid var(--line); border-radius: 18px; background: #fff; }
-    table { width: 100%; border-collapse: separate; border-spacing: 0; min-width: 980px; }
-    thead th { position: sticky; top: 0; z-index: 1; background: #f8fafc; color: #475569; font-size: 13px; text-align: left; padding: 13px 12px; border-bottom: 1px solid var(--line); white-space: nowrap; }
-    tbody td { padding: 13px 12px; border-bottom: 1px solid #f1f5f9; vertical-align: top; line-height: 1.55; }
-    tbody tr:hover { background: #f8fbff; }
-    .date { font-weight: 900; white-space: nowrap; }
-    .theme { font-weight: 850; }
-    .muted { color: var(--muted); }
-    .chip { display: inline-flex; align-items: center; border-radius: 999px; padding: 4px 9px; font-size: 12px; font-weight: 800; background: var(--chip); color: #3730a3; white-space: nowrap; }
-    .chip.good { background: #dcfce7; color: var(--good); }
-    .chip.warn { background: #fef3c7; color: var(--warn); }
-    .chip.wait { background: #f1f5f9; color: var(--wait); }
-    .source-title { display: block; max-width: 280px; color: var(--muted); font-size: 12px; margin-top: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    details { margin-top: 6px; }
-    summary { cursor: pointer; color: var(--primary); font-size: 12px; font-weight: 800; }
-    .detail-box { margin-top: 6px; color: #475569; font-size: 13px; background: #f8fafc; border: 1px solid #e2e8f0; padding: 9px 10px; border-radius: 12px; max-width: 420px; }
-    .empty { padding: 34px; text-align: center; color: var(--muted); }
-    .error { background: #fff1f2; color: #9f1239; border: 1px solid #fecdd3; border-radius: 16px; padding: 12px 14px; margin-bottom: 14px; display: none; white-space: pre-wrap; }
-    .hint { font-size: 13px; color: var(--muted); line-height: 1.7; margin-top: 10px; }
-    .mini-grid { display: grid; grid-template-columns: 1.4fr auto; gap: 12px; align-items: end; }
-    .import-grid { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 14px; margin-bottom: 18px; }
-    .subcard { padding: 16px; }
-    .progress { height: 10px; background: #e5e7eb; border-radius: 999px; overflow: hidden; margin-top: 9px; }
-    .bar { height: 100%; width: 0%; background: var(--primary); transition: width .2s ease; }
-    .ocr-text { min-height: 110px; }
-    @media (max-width: 900px) { .import-grid, .mini-grid { grid-template-columns: 1fr; } }
-    @media (max-width: 900px) {
-      .form-grid { grid-template-columns: 1fr; }
-      .span-2, .span-3 { grid-column: auto; }
-      .actions { justify-content: stretch; }
-      button { width: 100%; }
-      .summary { grid-template-columns: repeat(2,1fr); }
-    }
+    :root{--bg:#f6f8fb;--card:#fff;--text:#10233f;--muted:#6b7280;--line:#d9e0ea;--accent:#2563eb;--ok:#16a34a;--warn:#d97706;--bad:#dc2626}
+    *{box-sizing:border-box} body{margin:0;background:var(--bg);font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans TC",sans-serif;color:var(--text)}
+    .wrap{max-width:1280px;margin:0 auto;padding:24px} h1{margin:0 0 8px;font-size:28px}.sub{color:var(--muted);margin-bottom:18px}
+    .panel{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:16px;margin-bottom:16px;box-shadow:0 8px 24px rgba(16,35,63,.04)}
+    .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}.grow{flex:1;min-width:260px}
+    button{border:0;border-radius:12px;background:var(--accent);color:white;padding:10px 14px;font-weight:700;cursor:pointer}button.secondary{background:#e5eaf3;color:#10233f}button:disabled{opacity:.55;cursor:not-allowed}.sheetBtn{display:inline-block;border-radius:12px;background:#16a34a;color:white;padding:10px 14px;font-weight:700;text-decoration:none}.ocrText{width:100%;min-height:110px;margin-top:10px;white-space:pre-wrap}.progress{height:8px;background:#e5eaf3;border-radius:99px;overflow:hidden;margin-top:8px}.bar{height:100%;width:0%;background:var(--accent);transition:width .2s}
+    input,select,textarea{border:1px solid var(--line);border-radius:12px;padding:10px 12px;font:inherit;background:#fff}label{font-size:14px;color:var(--muted)}
+    table{width:100%;border-collapse:separate;border-spacing:0;background:white;border:1px solid var(--line);border-radius:18px;overflow:hidden}th,td{padding:14px 16px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}th{background:#f9fbfe;font-weight:800;white-space:nowrap}tr:last-child td{border-bottom:0}
+    .small{font-size:13px;color:var(--muted)}.status{display:inline-block;padding:4px 10px;border-radius:99px;background:#eef2ff;color:#3730a3;font-weight:700;font-size:13px}.status.ok{background:#dcfce7;color:#166534}.status.warn{background:#ffedd5;color:#9a3412}.empty{padding:36px;text-align:center;color:var(--muted)}
+    a{color:#2563eb;text-decoration:none}.source{min-width:130px}.nowrap{white-space:nowrap}.theme{font-weight:800}.summary{margin-top:6px;color:var(--muted);font-size:13px;line-height:1.5}.toolbar{justify-content:space-between}.msg{font-size:14px;color:var(--muted)}
+    @media(max-width:760px){.wrap{padding:12px}table,thead,tbody,tr,th,td{display:block}thead{display:none}tr{border-bottom:1px solid var(--line);padding:10px}td{border:0;padding:7px 8px}td::before{content:attr(data-label);display:block;font-size:12px;color:var(--muted);margin-bottom:3px}}
   </style>
 </head>
 <body>
-  <main class="wrap">
-    <h1>中職主題日 / 啦啦隊情報表</h1>
-    <p class="subtitle">前端放 GitHub Pages，後端由 Google Apps Script 抓 PTT。畫面會整理成：日期、地點、球隊、主題日、啦啦隊成員、狀態、來源。</p>
+<div class="wrap">
+  <h1>PTT 中職活動監控工具</h1>
+  <div class="sub">GitHub Pages 前端 + Google Apps Script 後端。抓取後會同步到指定 Google Sheet，方便你手動補資料。</div>
 
-    <section class="card panel">
-      <div class="form-grid">
-        <div class="field span-2">
-          <label for="apiUrl">Google Apps Script Web App URL</label>
-          <input id="apiUrl" placeholder="貼上你的 GAS 部署網址" />
-        </div>
-        <div class="field span-2">
-          <label for="boards">PTT 看板</label>
-          <input id="boards" value="Baseball,CheerGirlsTW" />
-        </div>
-        <div class="field">
-          <label for="pages">每板抓取頁數</label>
-          <select id="pages">
-            <option value="1">1 頁</option>
-            <option value="2">2 頁</option>
-            <option value="3" selected>3 頁</option>
-            <option value="5">5 頁</option>
-            <option value="8">8 頁</option>
-          </select>
-        </div>
-        <div class="actions">
-          <button id="scanBtn">重新抓取</button>
-        </div>
-        <div class="field span-3">
-          <label>選項</label>
-          <div class="check-row">
-            <label class="check"><input type="checkbox" id="fullScan" checked /> 全文掃描</label>
-            <label class="check"><input type="checkbox" id="writeSheet" /> 寫入 Google Sheet</label>
-          </div>
-        </div>
-        <div class="field span-3">
-          <label for="filterText">快速篩選</label>
-          <input id="filterText" placeholder="例如：樂天、主題日、籃籃、洲際、疑似班表" />
-        </div>
+  <div class="panel">
+    <div class="row toolbar">
+      <div class="row">
+        <button id="scanBtn" onclick="scanNow()">重新抓取並同步 Sheet</button>
+        <button class="secondary" onclick="loadSheet()">讀取 Sheet 現有資料</button>
+        <a class="sheetBtn" target="_blank" href="https://docs.google.com/spreadsheets/d/1bHxuXSEbQczmWRwaVoT75HOJ4m3Z5EwaNp7QqUyE10k/edit">開啟 Google Sheet</a>
+        <label>PTT頁數 <select id="pages"><option>1</option><option>2</option><option selected>3</option><option>5</option><option>8</option></select></label>
+        <label><input type="checkbox" id="includePtt" checked> PTT</label>
+        <label><input type="checkbox" id="includeOfficial" checked> 官方來源</label>
       </div>
-      <div class="status">
-        <div id="statusText">尚未抓取</div>
-        <div>提示：若部署網址改過，請記得更新上方 URL。</div>
-      </div>
-      <div class="hint">第一版是規則式解析，不是 AI。日期、地點、成員若沒有明確寫在文章內，會留空或標成待確認。</div>
-    </section>
+      <div class="msg" id="message">尚未抓取</div>
+    </div>
+  </div>
 
+  <div class="panel">
+    <div class="row">
+      <input id="importUrl" class="grow" placeholder="貼上 PTT / 新聞 / 官方活動連結，可匯入並同步 Sheet" />
+      <button class="secondary" onclick="importLink()">匯入連結</button>
+    </div>
+    <div class="small" style="margin-top:8px">FB / IG 連結通常抓不到內容；建議改貼文字、截圖 OCR，或手動在 Sheet 補資料。</div>
+  </div>
 
-    <section class="import-grid">
-      <div class="card subcard">
-        <strong>連結匯入</strong>
-        <div class="hint">可貼 PTT、新聞、官網活動頁。FB / IG 若抓不到，建議改用截圖或貼文字。</div>
-        <div class="mini-grid" style="margin-top:10px;">
-          <div class="field"><label for="importUrl">活動情報連結</label><input id="importUrl" placeholder="https://www.ptt.cc/bbs/Baseball/..." /></div>
-          <button id="importUrlBtn" class="ghost">匯入連結</button>
-        </div>
-      </div>
-      <div class="card subcard">
-        <strong>圖片 OCR 匯入</strong>
-        <div class="hint">免費在瀏覽器端辨識圖片文字，不會上傳到 OpenAI。第一次載入中文字庫會比較慢。</div>
-        <div class="mini-grid" style="margin-top:10px;">
-          <div class="field"><label for="imageFile">活動海報 / 班表截圖</label><input id="imageFile" type="file" accept="image/*" /></div>
-          <button id="ocrBtn" class="ghost">辨識圖片</button>
-        </div>
-        <div class="progress"><div id="ocrBar" class="bar"></div></div>
-        <div id="ocrStatus" class="hint">尚未辨識圖片。</div>
-      </div>
-    </section>
+  <div class="panel">
+    <strong>圖片 OCR 匯入</strong>
+    <div class="small" style="margin-top:6px">可上傳活動海報、啦啦隊班表截圖。辨識在瀏覽器端執行，不使用 OpenAI API；辨識後會同步到 Google Sheet。</div>
+    <div class="row" style="margin-top:10px">
+      <input type="file" id="ocrFile" accept="image/*" />
+      <button class="secondary" id="ocrBtn" onclick="runOcr()">辨識圖片並同步 Sheet</button>
+    </div>
+    <div class="progress"><div id="ocrBar" class="bar"></div></div>
+    <div id="ocrStatus" class="small" style="margin-top:8px">尚未辨識圖片。</div>
+    <textarea id="ocrText" class="ocrText" placeholder="OCR 辨識出的文字會顯示在這裡，可複製到 Sheet 輔助修正。"></textarea>
+  </div>
 
-    <section class="card panel">
-      <strong>匯入修正 / 手動補資料</strong>
-      <div class="hint">可貼 Excel 複製出的 TSV、CSV，或 Markdown 表格。欄位建議：日期、地點、球隊、主題日、啦啦隊成員、狀態、來源、來源連結。</div>
-      <textarea id="manualText" class="ocr-text" placeholder="日期\t地點\t球隊\t主題日\t啦啦隊成員\t狀態\t來源\n6/15\t桃園棒球場\t樂天桃猿\tXXX主題日\t籃籃、Yuri\t已確認\t手動修正"></textarea>
-      <div class="actions" style="margin-top:10px; justify-content:flex-start;">
-        <button id="importManualBtn" class="ghost">匯入 / 修正表格</button>
-        <button id="clearLocalBtn" class="ghost">清除本機匯入資料</button>
-      </div>
-    </section>
+  <div class="panel">
+    <div class="row">
+      <input id="filter" class="grow" placeholder="搜尋球隊、主題日、成員、地點、來源..." oninput="render()" />
+      <button class="secondary" onclick="exportCsv()">匯出 CSV</button>
+      <a id="sheetLink" target="_blank" href="https://docs.google.com/spreadsheets/d/1bHxuXSEbQczmWRwaVoT75HOJ4m3Z5EwaNp7QqUyE10k/edit">Google Sheet</a>
+    </div>
+  </div>
 
-    <div id="errorBox" class="error"></div>
+  <div id="tableWrap"></div>
+</div>
 
-    <section class="summary">
-      <div class="card stat"><div class="num" id="totalCount">0</div><div class="name">總筆數</div></div>
-      <div class="card stat"><div class="num" id="confirmedCount">0</div><div class="name">已確認</div></div>
-      <div class="card stat"><div class="num" id="scheduleCount">0</div><div class="name">班表相關</div></div>
-      <div class="card stat"><div class="num" id="themeCount">0</div><div class="name">主題日相關</div></div>
-    </section>
+<script>
+const GAS_API_URL = "https://script.google.com/macros/s/AKfycbz55AVpqtUmTxdbV50pSPJntgonJcOM3CQv1lySRgOyxAgPbK7Jtl9p_yUmbalD1_RE/exec";
+let items = [];
+let loading = false;
 
-    <section class="card panel">
-      <div class="toolbar">
-        <strong>活動情報表</strong>
-        <button class="ghost" id="copyBtn">複製表格文字</button>
-      </div>
-      <div class="table-wrap">
-        <table>
-          <thead>
-            <tr>
-              <th>日期</th>
-              <th>地點</th>
-              <th>球隊</th>
-              <th>主題日</th>
-              <th>啦啦隊成員</th>
-              <th>狀態</th>
-              <th>來源</th>
-            </tr>
-          </thead>
-          <tbody id="tbody">
-            <tr><td colspan="7" class="empty">請先按「重新抓取」。</td></tr>
-          </tbody>
-        </table>
-      </div>
-    </section>
-  </main>
+function jsonp(params){
+  return new Promise((resolve,reject)=>{
+    const cb='cb_'+Date.now()+'_'+Math.random().toString(36).slice(2);
+    const s=document.createElement('script');
+    const qs=new URLSearchParams({...params,callback:cb}).toString();
+    window[cb]=(data)=>{cleanup();resolve(data)};
+    s.onerror=()=>{cleanup();reject(new Error('連線失敗'))};
+    function cleanup(){delete window[cb];s.remove()}
+    s.src=GAS_API_URL+'?'+qs;
+    document.body.appendChild(s);
+  });
+}
 
-  <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
-  <script>
-    // 你也可以直接把部署網址寫死在這裡，例如：
-    // const DEFAULT_GAS_API_URL = "https://script.google.com/macros/s/xxxxxxxx/exec";
-    const DEFAULT_GAS_API_URL = "請貼上你的 Google Apps Script Web App URL";
-
-    const TEAM_RULES = [
-      { team: '中信兄弟', keywords: ['中信兄弟', '兄弟', 'Passion Sisters', 'PS女孩'] },
-      { team: '樂天桃猿', keywords: ['樂天桃猿', '樂天', 'Rakuten Girls', '樂天女孩'] },
-      { team: '統一獅', keywords: ['統一獅', '統一', 'Uni Girls', 'Uni-Girls'] },
-      { team: '富邦悍將', keywords: ['富邦悍將', '富邦', 'Fubon Angels'] },
-      { team: '味全龍', keywords: ['味全龍', '味全', 'Dragon Beauties', '小龍女'] },
-      { team: '台鋼雄鷹', keywords: ['台鋼雄鷹', '台鋼', 'Wing Stars'] },
-    ];
-    const LOCATION_RULES = [
-      { location: '台北大巨蛋', keywords: ['台北大巨蛋', '大巨蛋'] },
-      { location: '桃園棒球場', keywords: ['桃園棒球場', '樂天桃園棒球場', '桃園國際棒球場', '桃園'] },
-      { location: '臺中洲際棒球場', keywords: ['台中洲際棒球場', '臺中洲際棒球場', '洲際棒球場', '洲際'] },
-      { location: '台南棒球場', keywords: ['台南棒球場', '臺南棒球場', '台南', '臺南'] },
-      { location: '新莊棒球場', keywords: ['新莊棒球場', '新莊'] },
-      { location: '澄清湖棒球場', keywords: ['澄清湖棒球場', '澄清湖'] },
-      { location: '天母棒球場', keywords: ['天母棒球場', '天母'] },
-      { location: '花蓮棒球場', keywords: ['花蓮棒球場', '花蓮'] },
-      { location: '嘉義市棒球場', keywords: ['嘉義市棒球場', '嘉義'] },
-      { location: '斗六棒球場', keywords: ['斗六棒球場', '斗六'] },
-    ];
-    const CHEER_MEMBER_HINTS = ['籃籃','Yuri','若潼','峮峮','短今','秀秀子','君白','李多慧','林襄','林岱縈','沐妍','菲菲','筠熹','孟潔','貴貴','波波','粿粿','梓梓','妮可','慈妹','檸檬','小迪','雅涵','小映','嘎琳','壯壯','丹丹','巫苡萱','小白','瑟七','岱縈','牙牙','Faye','曲曲','十元','一粒','斐棋','Wendy','林可','安芝儇'];
-
-    const $ = (id) => document.getElementById(id);
-    const state = { events: [], filtered: [] };
-
-    $('apiUrl').value = localStorage.getItem('gasApiUrl') || (DEFAULT_GAS_API_URL.includes('script.google.com') ? DEFAULT_GAS_API_URL : '');
-    state.events = loadLocalRows();
+async function scanNow(){
+  setLoading(true,'抓取中，會同步到 Google Sheet...');
+  try{
+    const data=await jsonp({action:'scan',pages:document.getElementById('pages').value,ptt:document.getElementById('includePtt').checked?'1':'0',official:document.getElementById('includeOfficial').checked?'1':'0',sync:'1'});
+    if(!data.ok) throw new Error(data.error||'抓取失敗');
+    items=data.items||[];
+    const added=data.sheet?`，Sheet 新增 ${data.sheet.added} 筆，總計 ${data.sheet.total} 筆`:'';
+    setMsg(`完成：抓到 ${items.length} 筆${added}`);
     render();
+  }catch(e){setMsg('錯誤：'+e.message)}finally{setLoading(false)}
+}
 
-    $('scanBtn').addEventListener('click', scan);
-    $('filterText').addEventListener('input', render);
-    $('copyBtn').addEventListener('click', copyTableText);
-    $('importUrlBtn').addEventListener('click', importUrl);
-    $('ocrBtn').addEventListener('click', runOcr);
-    $('importManualBtn').addEventListener('click', importManualText);
-    $('clearLocalBtn').addEventListener('click', () => { localStorage.removeItem('cpblManualRows'); state.events = state.events.filter(e => !e.localImported); render(); $('statusText').textContent = '已清除本機匯入資料。'; });
+async function loadSheet(){
+  setLoading(true,'讀取 Sheet 中...');
+  try{
+    const data=await jsonp({action:'getSheet'});
+    if(!data.ok) throw new Error(data.error||'讀取失敗');
+    items=data.items||[];
+    setMsg(`已讀取 Sheet：${items.length} 筆`);
+    render();
+  }catch(e){setMsg('錯誤：'+e.message)}finally{setLoading(false)}
+}
 
-    function setLoading(isLoading) {
-      $('scanBtn').disabled = isLoading;
-      $('scanBtn').textContent = isLoading ? '抓取中...' : '重新抓取';
-    }
-    function showError(message) {
-      const box = $('errorBox');
-      if (!message) { box.style.display = 'none'; box.textContent = ''; return; }
-      box.style.display = 'block'; box.textContent = message;
-    }
+async function importLink(){
+  const url=document.getElementById('importUrl').value.trim();
+  if(!url){setMsg('請先貼上連結');return}
+  setLoading(true,'匯入連結中...');
+  try{
+    const data=await jsonp({action:'importLink',url:url,sync:'1'});
+    if(!data.ok) throw new Error(data.error||'匯入失敗');
+    if(data.item) items.unshift(data.item);
+    const added=data.sheet?`，Sheet 新增 ${data.sheet.added} 筆`:'';
+    setMsg('匯入完成'+added);
+    render();
+  }catch(e){setMsg('錯誤：'+e.message+'；如果是 FB / IG 連結，建議改用截圖 OCR 或直接到 Sheet 補資料')}finally{setLoading(false)}
+}
 
-    function callGas(action, params, timeoutMs = 60000) {
-      const apiUrl = $('apiUrl').value.trim();
-      if (!apiUrl || !apiUrl.startsWith('http')) return Promise.reject(new Error('請先貼上 Google Apps Script Web App URL。'));
-      localStorage.setItem('gasApiUrl', apiUrl);
-      return new Promise((resolve, reject) => {
-        const callbackName = 'pttCpblCallback_' + Date.now() + '_' + Math.floor(Math.random() * 10000);
-        const query = new URLSearchParams({ action, callback: callbackName, ...params });
-        const sep = apiUrl.includes('?') ? '&' : '?';
-        const script = document.createElement('script');
-        const timer = setTimeout(() => { cleanup(); reject(new Error('呼叫 GAS 逾時。')); }, timeoutMs);
-        window[callbackName] = (data) => { cleanup(); resolve(data); };
-        script.onerror = () => { cleanup(); reject(new Error('無法呼叫 GAS。請確認 Web App URL、存取權限，以及是否已部署最新版本。')); };
-        script.src = apiUrl + sep + query.toString();
-        document.body.appendChild(script);
-        function cleanup() { clearTimeout(timer); delete window[callbackName]; if (script.parentNode) script.parentNode.removeChild(script); }
-      });
-    }
+async function runOcr(){
+  const file=document.getElementById('ocrFile').files[0];
+  if(!file){setMsg('請先選擇圖片');return}
+  if(!window.Tesseract){setMsg('OCR 程式載入失敗，請確認網路可以連到 jsDelivr');return}
+  const btn=document.getElementById('ocrBtn');
+  btn.disabled=true; btn.textContent='辨識中...'; setOcr(2,'準備辨識圖片...');
+  try{
+    const result=await Tesseract.recognize(file,'chi_tra+eng',{logger:m=>{
+      if(m.status){const pct=Math.round((m.progress||0)*100);setOcr(Math.max(2,pct),`${m.status} ${pct}%`)}
+    }});
+    const text=(result.data&&result.data.text)||'';
+    document.getElementById('ocrText').value=text;
+    const item=parseTextToItem(text,{source:'圖片OCR',rawTitle:file.name,status:'待確認',confidence:'OCR'});
+    const data=await jsonp({action:'importItem',date:item.date,place:item.place,team:item.team,theme:item.theme,cheerMembers:item.cheerMembers,status:item.status,source:item.source,confidence:item.confidence,summary:item.summary,rawTitle:item.rawTitle,sync:'1'});
+    if(!data.ok) throw new Error(data.error||'同步失敗');
+    if(data.item) items.unshift(data.item);
+    setOcr(100,'OCR 完成，已同步到 Google Sheet。若欄位有誤，請直接到 Sheet 修正。');
+    setMsg(`圖片 OCR 匯入完成，Sheet 新增 ${data.sheet?data.sheet.added:0} 筆`);
+    render();
+  }catch(e){setMsg('OCR 錯誤：'+e.message);setOcr(0,'OCR 失敗')}
+  finally{btn.disabled=false;btn.textContent='辨識圖片並同步 Sheet'}
+}
 
-    async function scan() {
-      showError(''); setLoading(true); $('statusText').textContent = '正在抓取 PTT 與解析欄位...';
-      try {
-        const data = await callGas('scan', {
-          boards: $('boards').value.trim(), pages: $('pages').value,
-          fullScan: $('fullScan').checked ? '1' : '0', writeSheet: $('writeSheet').checked ? '1' : '0'
-        });
-        handleData(data, false);
-      } catch (err) { showError(err.message); }
-      finally { setLoading(false); }
-    }
+function setOcr(pct,msg){document.getElementById('ocrBar').style.width=pct+'%';document.getElementById('ocrStatus').textContent=msg}
 
-    async function importUrl() {
-      showError('');
-      const url = $('importUrl').value.trim();
-      if (!url) { showError('請先貼上要匯入的連結。'); return; }
-      $('importUrlBtn').disabled = true; $('importUrlBtn').textContent = '匯入中...';
-      try {
-        const data = await callGas('parseUrl', { url, writeSheet: $('writeSheet').checked ? '1' : '0' }, 45000);
-        handleData(data, true);
-      } catch (err) {
-        showError(err.message + '\n如果是 FB / IG 連結抓不到，請改用截圖 OCR 或把貼文文字貼到「匯入修正」。');
-      } finally {
-        $('importUrlBtn').disabled = false; $('importUrlBtn').textContent = '匯入連結';
-      }
-    }
+function parseTextToItem(text,base={}){
+  const t=String(text||'').replace(/\s+/g,' ');
+  return {
+    date:extractDate(t),
+    place:extractPlace(t),
+    team:extractTeam(t),
+    theme:extractTheme(t,base.rawTitle),
+    cheerMembers:extractMembers(t),
+    status:base.status||'待確認',
+    source:base.source||'圖片OCR',
+    confidence:base.confidence||'OCR',
+    summary:t.slice(0,120),
+    rawTitle:base.rawTitle||'圖片OCR匯入'
+  };
+}
+function extractDate(t){
+  const patterns=[/(?:202[0-9][\/.-])?(1[0-2]|0?[1-9])[\/.-](3[01]|[12][0-9]|0?[1-9])(?:\s*[（(]?[日一二三四五六][）)]?)?/,/(1[0-2]|0?[1-9])月(3[01]|[12][0-9]|0?[1-9])日?/];
+  for(const re of patterns){const m=t.match(re);if(m){const mo=Number(m[1]),d=Number(m[2]); if(mo>=1&&mo<=12&&d>=1&&d<=31) return `${mo}/${d}`}}
+  return '';
+}
+function extractPlace(t){const places=['台北大巨蛋','臺北大巨蛋','洲際棒球場','台中洲際','臺中洲際','桃園棒球場','樂天桃園棒球場','新莊棒球場','台南棒球場','臺南棒球場','澄清湖棒球場','斗六棒球場','花蓮棒球場'];return places.find(p=>t.includes(p))||''}
+function extractTeam(t){const map={'統一獅':['統一獅','統一','Uni-Lions','Uni Girls'],'味全龍':['味全龍','味全','Dragon Beauties','小龍女'],'富邦悍將':['富邦悍將','富邦','Fubon Angels'],'樂天桃猿':['樂天桃猿','樂天','Rakuten Girls','桃猿'],'中信兄弟':['中信兄弟','兄弟','Passion Sisters','PS女孩'],'台鋼雄鷹':['台鋼雄鷹','台鋼','Wing Stars']}; for(const [team,ks] of Object.entries(map)){if(ks.some(k=>t.includes(k)))return team}return ''}
+function extractTheme(t,title=''){const src=title+' '+t; const m=src.match(/([^，。\n]{2,24}(?:主題日|女孩日|寵物日|聯名|合作|日))/); return m?m[1].trim():(title||'待確認')}
+function extractMembers(t){const known=['籃籃','Yuri','若潼','峮峮','短今','粿粿','李多慧','李雅英','林襄','巫苡萱','慈妹','筠熹','秀秀子','一粒','檸檬','孟潔','瑟七','小安','小白','羚小鹿','菲菲'];return [...new Set(known.filter(n=>t.includes(n)))].join('、')}
 
-    function handleData(data, append) {
-      if (!data || !data.ok) { showError((data && data.error) ? data.error : 'GAS 回傳失敗。'); return; }
-      const incoming = data.events || data.articles || [];
-      state.events = append ? mergeRows(state.events, incoming) : mergeRows(incoming, loadLocalRows());
-      const time = data.finishedAt ? new Date(data.finishedAt).toLocaleString('zh-TW') : new Date().toLocaleString('zh-TW');
-      const sheetText = data.sheetResult ? `｜寫入 Sheet：新增 ${data.sheetResult.appended} 筆，略過重複 ${data.sheetResult.skippedDuplicate} 筆` : '';
-      $('statusText').textContent = `最後更新：${time}｜目前 ${state.events.length} 筆${sheetText}`;
-      if (data.errors && data.errors.length) showError('部分看板抓取失敗：\n' + data.errors.map(e => `${e.board}: ${e.error}`).join('\n'));
-      render();
-    }
+function render(){
+  const q=document.getElementById('filter').value.trim().toLowerCase();
+  const data=items.filter(it=>!q||Object.values(it).join(' ').toLowerCase().includes(q));
+  if(!data.length){document.getElementById('tableWrap').innerHTML='<div class="panel empty">目前沒有資料</div>';return}
+  const rows=data.map(it=>`<tr>
+    <td data-label="日期" class="nowrap">${esc(it.date||'')}</td>
+    <td data-label="地點">${esc(it.place||'')}</td>
+    <td data-label="球隊">${esc(it.team||'')}</td>
+    <td data-label="主題日"><div class="theme">${esc(it.theme||'')}</div><div class="summary">${esc(it.summary||it.rawTitle||'')}</div></td>
+    <td data-label="啦啦隊成員">${esc(it.cheerMembers||'')}</td>
+    <td data-label="狀態">${statusHtml(it.status)}<div class="small">信心：${esc(it.confidence||0)}｜${esc(it.keywords||'')}</div></td>
+    <td data-label="來源" class="source"><a href="${escAttr(it.url||'#')}" target="_blank">${esc(it.source||'來源')}</a></td>
+  </tr>`).join('');
+  document.getElementById('tableWrap').innerHTML=`<table><thead><tr><th>日期</th><th>地點</th><th>球隊</th><th>主題日</th><th>啦啦隊成員</th><th>狀態</th><th>來源</th></tr></thead><tbody>${rows}</tbody></table>`;
+}
 
-    async function runOcr() {
-      showError('');
-      const file = $('imageFile').files && $('imageFile').files[0];
-      if (!file) { showError('請先選擇圖片。'); return; }
-      if (!window.Tesseract) { showError('OCR 程式載入失敗，請確認網路可以連到 jsDelivr。'); return; }
-      $('ocrBtn').disabled = true; $('ocrBtn').textContent = '辨識中...'; setOcrProgress(2, '準備辨識圖片...');
-      try {
-        const result = await Tesseract.recognize(file, 'chi_tra+eng', {
-          logger: m => {
-            if (m.status) {
-              const pct = Math.round((m.progress || 0) * 100);
-              setOcrProgress(Math.max(3, pct), `${m.status} ${pct ? pct + '%' : ''}`);
-            }
-          }
-        });
-        const text = (result.data && result.data.text) ? result.data.text.trim() : '';
-        if (!text) { setOcrProgress(0, '未辨識出文字。'); return; }
-        $('manualText').value = text;
-        const row = parseFreeTextToEvent(text, { sourceLabel: '圖片OCR', sourceUrl: '', title: file.name });
-        row.localImported = true;
-        state.events = mergeRows(state.events, [row]);
-        saveLocalRows(state.events.filter(e => e.localImported));
-        render();
-        setOcrProgress(100, '圖片已辨識並自動填入一筆資料；若欄位有誤，可在下方修正後再匯入。');
-      } catch (err) {
-        showError('OCR 失敗：' + err.message);
-      } finally {
-        $('ocrBtn').disabled = false; $('ocrBtn').textContent = '辨識圖片';
-      }
-    }
-    function setOcrProgress(pct, text) { $('ocrBar').style.width = Math.min(100, Math.max(0, pct)) + '%'; $('ocrStatus').textContent = text; }
-
-    function importManualText() {
-      showError('');
-      const text = $('manualText').value.trim();
-      if (!text) { showError('請先貼上要匯入或修正的資料。'); return; }
-      const rows = parseTableText(text);
-      const events = rows.length ? rows.map(rowToEvent) : [parseFreeTextToEvent(text, { sourceLabel: '手動匯入', sourceUrl: '' })];
-      events.forEach(e => e.localImported = true);
-      state.events = mergeRows(state.events, events);
-      saveLocalRows(state.events.filter(e => e.localImported));
-      $('statusText').textContent = `已匯入 / 修正 ${events.length} 筆資料。`;
-      render();
-    }
-
-    function parseTableText(text) {
-      const lines = text.split(/\r?\n/).map(l => l.trim()).filter(Boolean).filter(l => !/^\|?\s*-{2,}/.test(l));
-      if (!lines.length) return [];
-      let rows = lines.map(line => {
-        if (line.includes('|')) return line.replace(/^\|/, '').replace(/\|$/, '').split('|').map(s => s.trim());
-        if (line.includes('\t')) return line.split('\t').map(s => s.trim());
-        return splitCsvLine(line);
-      }).filter(r => r.length >= 3);
-      if (!rows.length) return [];
-      const header = rows[0].map(normalizeHeader);
-      const hasHeader = header.some(h => ['eventDate','location','team','themeDay','cheerMembers','status','sourceLabel','sourceUrl'].includes(h));
-      if (!hasHeader) return [];
-      rows = rows.slice(1);
-      return rows.map(cols => {
-        const obj = {}; header.forEach((h, i) => { if (h) obj[h] = cols[i] || ''; }); return obj;
-      }).filter(o => Object.values(o).some(Boolean));
-    }
-    function splitCsvLine(line) { return line.split(/,(?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)/).map(s => s.replace(/^\"|\"$/g,'').trim()); }
-    function normalizeHeader(h) {
-      h = String(h || '').replace(/\s/g, '');
-      const map = { '日期':'eventDate', '活動日期':'eventDate', '地點':'location', '球場':'location', '球隊':'team', '主題日':'themeDay', '活動':'themeDay', '啦啦隊成員':'cheerMembers', '成員':'cheerMembers', '狀態':'status', '來源':'sourceLabel', '來源連結':'sourceUrl', '連結':'sourceUrl' };
-      return map[h] || '';
-    }
-    function rowToEvent(row) {
-      return {
-        eventDate: row.eventDate || '', location: row.location || '', team: row.team || '', themeDay: row.themeDay || '', cheerMembers: row.cheerMembers || '', status: row.status || '手動修正', sourceLabel: row.sourceLabel || '手動修正', sourceUrl: row.sourceUrl || '', title: row.themeDay || '手動匯入', score: 999, confidence: '人工', matchedKeywords: [], possibleTypes: [], rawSnippet: ''
-      };
-    }
-
-    function parseFreeTextToEvent(text, base) {
-      const compact = String(text || '').replace(/\s+/g, ' ');
-      return {
-        eventDate: extractDate(compact),
-        location: extractByRules(compact, LOCATION_RULES, 'location'),
-        team: extractTeams(compact),
-        themeDay: extractTheme(compact),
-        cheerMembers: extractMembers(compact),
-        status: inferStatus(compact),
-        sourceLabel: base.sourceLabel || '手動匯入',
-        sourceUrl: base.sourceUrl || '',
-        title: base.title || '匯入資料',
-        score: 500,
-        confidence: '匯入',
-        matchedKeywords: [],
-        possibleTypes: [],
-        rawSnippet: compact.slice(0, 260),
-      };
-    }
-    function extractDate(text) {
-      let m = text.match(/(20\d{2})[\/\-.年]\s*(\d{1,2})[\/\-.月]\s*(\d{1,2})\s*(?:日)?/); if (m) return `${Number(m[2])}/${Number(m[3])}`;
-      m = text.match(/(\d{1,2})\s*[\/\-.月]\s*(\d{1,2})\s*(?:日)?/); if (m) return `${Number(m[1])}/${Number(m[2])}`;
-      return '';
-    }
-    function extractByRules(text, rules, field) { const lower = text.toLowerCase(); for (const r of rules) if (r.keywords.some(k => lower.includes(k.toLowerCase()))) return r[field]; return ''; }
-    function extractTeams(text) { const lower = text.toLowerCase(); return TEAM_RULES.filter(r => r.keywords.some(k => lower.includes(k.toLowerCase()))).map(r => r.team).filter(uniqueFilter).join('、'); }
-    function extractTheme(text) {
-      let m = text.match(/[「『【\[]([^」』】\]]{2,28})(?:主題日|主題週|女孩日|聯名)[」』】\]]?/); if (m) return m[1] + (m[0].includes('女孩日') ? '女孩日' : '主題日');
-      m = text.match(/([\u4e00-\u9fa5A-Za-z0-9・･\-—_ ]{2,24})(主題日|主題週|女孩日)/); if (m) return (m[1] + m[2]).trim();
-      if (text.includes('班表')) return '啦啦隊班表';
-      return '未命名活動';
-    }
-    function extractMembers(text) { return CHEER_MEMBER_HINTS.filter(n => text.includes(n)).filter(uniqueFilter).join('、'); }
-    function inferStatus(text) { if (/官方|公告|新聞|售票|確定|公布/.test(text)) return '已確認'; if (/班表|值班|出席/.test(text)) return '疑似班表'; return '待確認'; }
-    function uniqueFilter(v, i, a) { return v && a.indexOf(v) === i; }
-
-    function mergeRows(base, incoming) {
-      const map = new Map();
-      [...base, ...incoming].forEach(e => {
-        const key = rowKey(e);
-        const old = map.get(key) || {};
-        map.set(key, { ...old, ...e, eventDate: e.eventDate || old.eventDate || '', location: e.location || old.location || '', team: e.team || old.team || '', themeDay: e.themeDay || old.themeDay || '', cheerMembers: e.cheerMembers || old.cheerMembers || '', status: e.status || old.status || '', sourceLabel: e.sourceLabel || old.sourceLabel || '', sourceUrl: e.sourceUrl || old.sourceUrl || old.url || '', localImported: e.localImported || old.localImported || false });
-      });
-      return Array.from(map.values());
-    }
-    function rowKey(e) { return (e.sourceUrl || e.url) ? 'url:' + (e.sourceUrl || e.url) : ['manual', e.eventDate, e.team, e.themeDay].join('|'); }
-    function saveLocalRows(rows) { localStorage.setItem('cpblManualRows', JSON.stringify(rows || [])); }
-    function loadLocalRows() { try { return JSON.parse(localStorage.getItem('cpblManualRows') || '[]'); } catch { return []; } }
-
-    function render() {
-      const q = $('filterText').value.trim().toLowerCase();
-      state.filtered = state.events.filter(e => !q || [e.eventDate, e.location, e.team, e.themeDay, e.cheerMembers, e.status, e.sourceLabel, e.title, e.summaryHint, e.rawSnippet].join(' ').toLowerCase().includes(q));
-      updateStats(state.filtered);
-      const tbody = $('tbody');
-      if (!state.filtered.length) { tbody.innerHTML = '<tr><td colspan="7" class="empty">沒有符合條件的資料。</td></tr>'; return; }
-      tbody.innerHTML = state.filtered.map(e => `
-        <tr>
-          <td class="date">${esc(e.eventDate || '-')}</td><td>${esc(e.location || '-')}</td><td>${esc(e.team || '-')}</td>
-          <td><div class="theme">${esc(e.themeDay || '-')}</div><span class="source-title" title="${esc(e.title || '')}">${esc(e.title || '')}</span>${renderDetails(e)}</td>
-          <td>${esc(e.cheerMembers || '-')}</td><td>${statusChip(e.status)}</td>
-          <td>${renderSource(e)}<span class="source-title">信心：${esc(e.confidence || '-')}｜分數：${esc(String(e.score || 0))}</span></td>
-        </tr>`).join('');
-    }
-    function renderSource(e) { const url = e.sourceUrl || e.url || ''; return url ? `<a href="${escAttr(url)}" target="_blank" rel="noopener">${esc(e.sourceLabel || '來源')}</a>` : esc(e.sourceLabel || '手動匯入'); }
-    function renderDetails(e) { const detail = [e.location ? '' : '地點未解析到', e.matchedKeywords && e.matchedKeywords.length ? '命中：' + e.matchedKeywords.slice(0, 10).join('、') : '', e.rawSnippet ? '摘要：' + e.rawSnippet : e.summaryHint || ''].filter(Boolean).join('\n'); return detail ? `<details><summary>查看判斷依據</summary><div class="detail-box">${esc(detail).replace(/\n/g, '<br>')}</div></details>` : ''; }
-    function statusChip(status) { const s = status || '待確認'; let cls = 'wait'; if (s.includes('已確認')) cls = 'good'; else if (s.includes('疑似')) cls = 'warn'; return `<span class="chip ${cls}">${esc(s)}</span>`; }
-    function updateStats(items) { $('totalCount').textContent = items.length; $('confirmedCount').textContent = items.filter(e => (e.status || '').includes('已確認')).length; $('scheduleCount').textContent = items.filter(e => (e.status || '').includes('班表') || (e.themeDay || '').includes('班表')).length; $('themeCount').textContent = items.filter(e => (e.themeDay || '').includes('主題') || (e.status || '').includes('主題')).length; }
-    async function copyTableText() { if (!state.filtered.length) return; const header = ['日期','地點','球隊','主題日','啦啦隊成員','狀態','來源']; const rows = state.filtered.map(e => [e.eventDate||'', e.location||'', e.team||'', e.themeDay||'', e.cheerMembers||'', e.status||'', e.sourceLabel||'']); const text = [header, ...rows].map(row => row.join('\t')).join('\n'); try { await navigator.clipboard.writeText(text); $('copyBtn').textContent = '已複製'; setTimeout(() => $('copyBtn').textContent = '複製表格文字', 1200); } catch { showError('複製失敗，可直接用滑鼠選取表格內容。'); } }
-    function esc(value) { return String(value ?? '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
-    function escAttr(value) { return esc(value).replace(/'/g, '&#39;'); }
-  </script>
+function statusHtml(s){
+  const cls=s==='官方確認'||s==='已確認'?'ok':(String(s).includes('疑似')?'warn':'');
+  return `<span class="status ${cls}">${esc(s||'待確認')}</span>`;
+}
+function setLoading(v,msg){loading=v;document.getElementById('scanBtn').disabled=v;if(msg)setMsg(msg)}
+function setMsg(t){document.getElementById('message').textContent=t}
+function esc(s){return String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))}
+function escAttr(s){return esc(s).replace(/'/g,'&#39;')}
+function exportCsv(){
+  const header=['日期','地點','球隊','主題日','啦啦隊成員','狀態','來源','來源連結'];
+  const lines=[header].concat(items.map(it=>[it.date,it.place,it.team,it.theme,it.cheerMembers,it.status,it.source,it.url]));
+  const csv=lines.map(r=>r.map(v=>'"'+String(v??'').replace(/"/g,'""')+'"').join(',')).join('\n');
+  const blob=new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='cpbl-events.csv';a.click();URL.revokeObjectURL(a.href);
+}
+render();
+</script>
 </body>
 </html>
