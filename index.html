@@ -1,0 +1,689 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>PTT 中職主題日 / 啦啦隊情報監控</title>
+  <style>
+    :root {
+      --bg: #f6f7fb;
+      --card: #ffffff;
+      --text: #172033;
+      --muted: #6b7280;
+      --line: #e5e7eb;
+      --primary: #2563eb;
+      --primary-dark: #1d4ed8;
+      --good: #15803d;
+      --mid: #b45309;
+      --low: #6b7280;
+      --bad: #b91c1c;
+      --chip: #eef2ff;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      background: linear-gradient(180deg, #eef4ff 0%, var(--bg) 260px);
+      color: var(--text);
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans TC", sans-serif;
+    }
+
+    a { color: var(--primary); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    .wrap {
+      max-width: 1180px;
+      margin: 0 auto;
+      padding: 28px 18px 48px;
+    }
+
+    .hero {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 16px;
+      margin-bottom: 18px;
+    }
+
+    .title {
+      margin: 0;
+      font-size: 30px;
+      line-height: 1.2;
+      letter-spacing: -0.02em;
+    }
+
+    .subtitle {
+      margin: 8px 0 0;
+      color: var(--muted);
+      line-height: 1.7;
+    }
+
+    .card {
+      background: rgba(255,255,255,0.92);
+      border: 1px solid rgba(229,231,235,0.9);
+      border-radius: 22px;
+      box-shadow: 0 16px 38px rgba(15, 23, 42, 0.08);
+    }
+
+    .panel {
+      padding: 18px;
+      margin-bottom: 18px;
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      gap: 12px;
+      align-items: end;
+    }
+
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 7px;
+    }
+
+    label {
+      font-size: 13px;
+      color: var(--muted);
+      font-weight: 650;
+    }
+
+    input, select {
+      width: 100%;
+      border: 1px solid var(--line);
+      background: #fff;
+      border-radius: 14px;
+      padding: 11px 12px;
+      font-size: 15px;
+      color: var(--text);
+      outline: none;
+    }
+
+    input:focus, select:focus {
+      border-color: #93c5fd;
+      box-shadow: 0 0 0 4px rgba(147,197,253,0.25);
+    }
+
+    .span-2 { grid-column: span 2; }
+    .span-3 { grid-column: span 3; }
+
+    .check-row {
+      display: flex;
+      gap: 14px;
+      flex-wrap: wrap;
+      align-items: center;
+      padding-top: 2px;
+    }
+
+    .check {
+      display: inline-flex;
+      gap: 8px;
+      align-items: center;
+      color: var(--text);
+      font-weight: 600;
+      font-size: 14px;
+      user-select: none;
+    }
+
+    .check input {
+      width: 16px;
+      height: 16px;
+      padding: 0;
+    }
+
+    .actions {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      justify-content: flex-end;
+    }
+
+    button {
+      border: 0;
+      border-radius: 14px;
+      background: var(--primary);
+      color: white;
+      padding: 12px 16px;
+      font-weight: 800;
+      font-size: 15px;
+      cursor: pointer;
+      box-shadow: 0 10px 20px rgba(37,99,235,0.22);
+    }
+
+    button:hover { background: var(--primary-dark); }
+    button:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    .ghost {
+      background: #fff;
+      color: var(--primary);
+      border: 1px solid #bfdbfe;
+      box-shadow: none;
+    }
+
+    .ghost:hover {
+      background: #eff6ff;
+    }
+
+    .status {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: center;
+      margin: 12px 0 0;
+      color: var(--muted);
+      font-size: 14px;
+      flex-wrap: wrap;
+    }
+
+    .summary {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+      margin-bottom: 18px;
+    }
+
+    .stat {
+      padding: 16px;
+    }
+
+    .stat .num {
+      font-size: 28px;
+      font-weight: 900;
+      margin-bottom: 4px;
+    }
+
+    .stat .name {
+      color: var(--muted);
+      font-size: 14px;
+      font-weight: 650;
+    }
+
+    .toolbar {
+      display: flex;
+      gap: 10px;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+      flex-wrap: wrap;
+    }
+
+    .search {
+      max-width: 360px;
+    }
+
+    .list {
+      display: grid;
+      gap: 12px;
+    }
+
+    .item {
+      padding: 16px;
+    }
+
+    .item-head {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: flex-start;
+      margin-bottom: 10px;
+    }
+
+    .item-title {
+      margin: 0;
+      font-size: 18px;
+      line-height: 1.45;
+    }
+
+    .meta {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      color: var(--muted);
+      font-size: 13px;
+      margin-top: 8px;
+    }
+
+    .chips {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+      margin-top: 12px;
+    }
+
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      background: var(--chip);
+      color: #3730a3;
+      border-radius: 999px;
+      padding: 5px 9px;
+      font-size: 12px;
+      font-weight: 750;
+    }
+
+    .chip.type {
+      background: #ecfdf5;
+      color: #166534;
+    }
+
+    .chip.team {
+      background: #fff7ed;
+      color: #9a3412;
+    }
+
+    .score {
+      white-space: nowrap;
+      border-radius: 999px;
+      padding: 7px 10px;
+      font-size: 13px;
+      font-weight: 850;
+    }
+
+    .score.high { background: #dcfce7; color: var(--good); }
+    .score.mid { background: #fef3c7; color: var(--mid); }
+    .score.low { background: #f3f4f6; color: var(--low); }
+
+    .hint {
+      margin: 12px 0 0;
+      color: #4b5563;
+      font-size: 14px;
+      line-height: 1.65;
+      background: #f9fafb;
+      border: 1px solid #eef0f3;
+      border-radius: 14px;
+      padding: 10px 12px;
+    }
+
+    .empty, .error {
+      padding: 24px;
+      text-align: center;
+      color: var(--muted);
+    }
+
+    .error {
+      color: var(--bad);
+      background: #fff1f2;
+      border-color: #fecdd3;
+    }
+
+    .footer-note {
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.7;
+      margin-top: 18px;
+    }
+
+    code {
+      background: #eef2ff;
+      color: #3730a3;
+      padding: 2px 6px;
+      border-radius: 8px;
+    }
+
+    @media (max-width: 860px) {
+      .form-grid, .summary {
+        grid-template-columns: 1fr;
+      }
+      .span-2, .span-3 {
+        grid-column: span 1;
+      }
+      .actions {
+        justify-content: stretch;
+      }
+      button {
+        width: 100%;
+      }
+      .item-head {
+        flex-direction: column;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <section class="hero">
+      <div>
+        <h1 class="title">PTT 中職主題日 / 啦啦隊情報監控</h1>
+        <p class="subtitle">
+          前端放在 GitHub Pages，後端由 Google Apps Script 抓 PTT 並回傳資料。適合每天手動開頁面監看，也可選擇寫入 Google Sheet 留紀錄。
+        </p>
+      </div>
+    </section>
+
+    <section class="card panel">
+      <div class="form-grid">
+        <div class="field span-2">
+          <label for="boards">監看 PTT 看板，逗號分隔</label>
+          <input id="boards" value="Baseball,CheerGirlsTW" />
+        </div>
+
+        <div class="field">
+          <label for="pages">每板抓取頁數</label>
+          <select id="pages">
+            <option value="1">1 頁</option>
+            <option value="2">2 頁</option>
+            <option value="3" selected>3 頁</option>
+            <option value="5">5 頁</option>
+            <option value="10">10 頁</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label for="confidence">最低信心</label>
+          <select id="confidence">
+            <option value="低" selected>低以上</option>
+            <option value="中">中以上</option>
+            <option value="高">高以上</option>
+          </select>
+        </div>
+
+        <div class="field span-2">
+          <label>選項</label>
+          <div class="check-row">
+            <label class="check"><input type="checkbox" id="fullScan" /> 全文掃描</label>
+            <label class="check"><input type="checkbox" id="writeSheet" /> 寫入 Sheet</label>
+          </div>
+        </div>
+
+        <div class="field span-3">
+          <label for="filter">前端搜尋 / 篩選</label>
+          <input id="filter" class="search" placeholder="輸入球隊、啦啦隊、主題日、班表…" />
+        </div>
+
+        <div class="actions span-3">
+          <button class="ghost" id="pingBtn" type="button">測試後端</button>
+          <button id="scanBtn" type="button">重新抓取</button>
+        </div>
+      </div>
+
+      <div class="status">
+        <div id="statusText">尚未抓取。</div>
+        <div>後端：<code id="apiStatus">請先設定 GAS_API_URL</code></div>
+      </div>
+    </section>
+
+    <section class="summary">
+      <div class="card stat">
+        <div class="num" id="totalCount">0</div>
+        <div class="name">符合文章</div>
+      </div>
+      <div class="card stat">
+        <div class="num" id="highCount">0</div>
+        <div class="name">高信心</div>
+      </div>
+      <div class="card stat">
+        <div class="num" id="midCount">0</div>
+        <div class="name">中信心</div>
+      </div>
+      <div class="card stat">
+        <div class="num" id="sheetCount">-</div>
+        <div class="name">寫入 Sheet</div>
+      </div>
+    </section>
+
+    <section class="toolbar">
+      <strong>監控結果</strong>
+      <span id="resultMeta" class="subtitle"></span>
+    </section>
+
+    <section id="results" class="list">
+      <div class="card empty">
+        還沒有資料。請先按「測試後端」，確認成功後再按「重新抓取」。
+      </div>
+    </section>
+
+    <p class="footer-note">
+      提醒：PTT 可當情報雷達，但不一定是正式來源。遇到「網友討論」或「疑似班表」時，建議再點來源連結確認。
+    </p>
+  </main>
+
+  <script>
+    // ============================================================
+    // 必填：請貼上你的 Google Apps Script Web App URL
+    // 範例：https://script.google.com/macros/s/AKfycbxxxxxxxxxxxxxxxx/exec
+    // ============================================================
+    const GAS_API_URL = "請貼上你的 Google Apps Script Web App URL";
+
+    let lastArticles = [];
+    let lastResponse = null;
+
+    const els = {
+      boards: document.getElementById('boards'),
+      pages: document.getElementById('pages'),
+      confidence: document.getElementById('confidence'),
+      fullScan: document.getElementById('fullScan'),
+      writeSheet: document.getElementById('writeSheet'),
+      filter: document.getElementById('filter'),
+      scanBtn: document.getElementById('scanBtn'),
+      pingBtn: document.getElementById('pingBtn'),
+      statusText: document.getElementById('statusText'),
+      apiStatus: document.getElementById('apiStatus'),
+      totalCount: document.getElementById('totalCount'),
+      highCount: document.getElementById('highCount'),
+      midCount: document.getElementById('midCount'),
+      sheetCount: document.getElementById('sheetCount'),
+      resultMeta: document.getElementById('resultMeta'),
+      results: document.getElementById('results'),
+    };
+
+    init();
+
+    function init() {
+      if (isApiConfigured()) {
+        els.apiStatus.textContent = '已設定';
+      } else {
+        els.apiStatus.textContent = '未設定';
+      }
+
+      els.scanBtn.addEventListener('click', scan);
+      els.pingBtn.addEventListener('click', ping);
+      els.filter.addEventListener('input', render);
+      els.confidence.addEventListener('change', render);
+    }
+
+    function isApiConfigured() {
+      return GAS_API_URL && GAS_API_URL.indexOf('script.google.com') !== -1;
+    }
+
+    function buildUrl(action) {
+      const url = new URL(GAS_API_URL);
+      url.searchParams.set('action', action || 'scan');
+
+      if (action !== 'ping') {
+        url.searchParams.set('boards', els.boards.value.trim());
+        url.searchParams.set('pages', els.pages.value);
+        url.searchParams.set('fullScan', els.fullScan.checked ? '1' : '0');
+        url.searchParams.set('writeSheet', els.writeSheet.checked ? '1' : '0');
+      }
+
+      return url.toString();
+    }
+
+    function jsonp(url, timeoutMs) {
+      return new Promise((resolve, reject) => {
+        const callbackName = '__pttCpblCallback_' + Date.now() + '_' + Math.random().toString(36).slice(2);
+        const script = document.createElement('script');
+        const timer = setTimeout(() => {
+          cleanup();
+          reject(new Error('後端沒有回應，可能是 Apps Script 部署權限、網址、或 PTT 抓取逾時。'));
+        }, timeoutMs || 60000);
+
+        function cleanup() {
+          clearTimeout(timer);
+          delete window[callbackName];
+          if (script.parentNode) script.parentNode.removeChild(script);
+        }
+
+        window[callbackName] = data => {
+          cleanup();
+          resolve(data);
+        };
+
+        const sep = url.indexOf('?') === -1 ? '?' : '&';
+        script.src = url + sep + 'callback=' + encodeURIComponent(callbackName);
+        script.onerror = () => {
+          cleanup();
+          reject(new Error('無法載入 Apps Script API。請確認 GAS_API_URL 與部署權限。'));
+        };
+
+        document.body.appendChild(script);
+      });
+    }
+
+    async function ping() {
+      if (!isApiConfigured()) {
+        showError('請先在 index.html 裡設定 GAS_API_URL。');
+        return;
+      }
+
+      setLoading(true, '正在測試後端連線…');
+
+      try {
+        const data = await jsonp(buildUrl('ping'), 30000);
+        if (!data.ok) throw new Error(data.error || '後端回傳失敗');
+        els.statusText.textContent = '後端連線成功：' + formatTime(new Date());
+        els.apiStatus.textContent = '連線成功';
+      } catch (err) {
+        showError(err.message || String(err));
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    async function scan() {
+      if (!isApiConfigured()) {
+        showError('請先在 index.html 裡設定 GAS_API_URL。');
+        return;
+      }
+
+      setLoading(true, '正在抓取 PTT，全文掃描或頁數較多時會比較慢…');
+
+      try {
+        const data = await jsonp(buildUrl('scan'), 90000);
+        if (!data.ok) throw new Error(data.error || '後端回傳失敗');
+
+        lastResponse = data;
+        lastArticles = data.articles || [];
+        els.statusText.textContent = '抓取完成：' + formatTime(new Date());
+        render();
+      } catch (err) {
+        showError(err.message || String(err));
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    function setLoading(isLoading, text) {
+      els.scanBtn.disabled = isLoading;
+      els.pingBtn.disabled = isLoading;
+      if (text) els.statusText.textContent = text;
+    }
+
+    function render() {
+      const minConfidence = els.confidence.value;
+      const q = els.filter.value.trim().toLowerCase();
+      const filtered = (lastArticles || []).filter(item => {
+        if (!passConfidence(item.confidence, minConfidence)) return false;
+        if (!q) return true;
+        const haystack = [
+          item.board, item.title, item.author, item.confidence,
+          (item.possibleTypes || []).join(' '),
+          (item.teams || []).join(' '),
+          (item.matchedKeywords || []).join(' '),
+          item.summaryHint || ''
+        ].join(' ').toLowerCase();
+        return haystack.indexOf(q) !== -1;
+      });
+
+      const high = filtered.filter(a => a.confidence === '高').length;
+      const mid = filtered.filter(a => a.confidence === '中').length;
+
+      els.totalCount.textContent = filtered.length;
+      els.highCount.textContent = high;
+      els.midCount.textContent = mid;
+
+      const sheetResult = lastResponse && lastResponse.sheetResult;
+      els.sheetCount.textContent = sheetResult ? sheetResult.appended : '-';
+
+      if (lastResponse) {
+        const config = lastResponse.config || {};
+        els.resultMeta.textContent = [
+          '看板：' + (config.boards || []).join('、'),
+          '每板 ' + config.pagesPerBoard + ' 頁',
+          config.fullScan ? '全文掃描' : '標題命中才抓內文',
+          lastResponse.errors && lastResponse.errors.length ? '有錯誤 ' + lastResponse.errors.length + ' 筆' : ''
+        ].filter(Boolean).join('｜');
+      }
+
+      if (!filtered.length) {
+        els.results.innerHTML = '<div class="card empty">沒有符合目前篩選條件的文章。</div>';
+        return;
+      }
+
+      els.results.innerHTML = filtered.map(renderItem).join('');
+    }
+
+    function renderItem(item) {
+      const confidenceClass = item.confidence === '高' ? 'high' : item.confidence === '中' ? 'mid' : 'low';
+      const types = (item.possibleTypes || []).map(t => `<span class="chip type">${escapeHtml(t)}</span>`).join('');
+      const teams = (item.teams || []).map(t => `<span class="chip team">${escapeHtml(t)}</span>`).join('');
+      const keywords = (item.matchedKeywords || []).slice(0, 12).map(k => `<span class="chip">${escapeHtml(k)}</span>`).join('');
+
+      return `
+        <article class="card item">
+          <div class="item-head">
+            <div>
+              <h2 class="item-title">
+                <a href="${escapeAttr(item.url)}" target="_blank" rel="noopener noreferrer">${escapeHtml(item.title)}</a>
+              </h2>
+              <div class="meta">
+                <span>看板：${escapeHtml(item.board || '')}</span>
+                <span>作者：${escapeHtml(item.author || '')}</span>
+                <span>日期：${escapeHtml(item.date || '')}</span>
+                <span>${item.fetchedBody ? '已抓內文' : '未抓內文'}</span>
+              </div>
+            </div>
+            <div class="score ${confidenceClass}">${escapeHtml(item.confidence || '低')}｜${Number(item.score || 0)}</div>
+          </div>
+
+          <div class="chips">${types}${teams}${keywords}</div>
+          ${item.summaryHint ? `<p class="hint">${escapeHtml(item.summaryHint)}</p>` : ''}
+          ${item.fetchError ? `<p class="hint" style="color:#b91c1c;">內文抓取失敗：${escapeHtml(item.fetchError)}</p>` : ''}
+        </article>
+      `;
+    }
+
+    function passConfidence(value, min) {
+      const order = { '低': 1, '中': 2, '高': 3 };
+      return (order[value] || 1) >= (order[min] || 1);
+    }
+
+    function showError(message) {
+      els.statusText.textContent = '發生錯誤';
+      els.results.innerHTML = `<div class="card error">${escapeHtml(message)}</div>`;
+    }
+
+    function formatTime(d) {
+      return d.toLocaleString('zh-TW', { hour12: false });
+    }
+
+    function escapeHtml(s) {
+      return String(s || '')
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;')
+        .replaceAll('"', '&quot;')
+        .replaceAll("'", '&#39;');
+    }
+
+    function escapeAttr(s) {
+      return escapeHtml(s).replaceAll('`', '&#96;');
+    }
+  </script>
+</body>
+</html>
